@@ -31,8 +31,10 @@ def camera_loop():
 
         frame = cv2.resize(frame, (320, 320))
         fall_suspected, info, new_frame = detect(frame)
-        actually_fallen = check_person_on_object(info, new_frame)
-
+        if fall_suspected:
+            actually_fallen = check_person_on_object(info, new_frame)
+        else:
+            actually_fallen = False
         with frame_lock:
             latest_frame = new_frame.copy()
 
