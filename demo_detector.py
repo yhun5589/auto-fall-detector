@@ -67,23 +67,30 @@ def detect(frame, conf_threshold=0.6):
 
             # --- Draw boxes ---
             color = (0, 255, 0) if class_detect != "person" else (255, 255, 0)
-            cv2.rectangle(new_frame, (x1, y1), (x2, y2), color, 2)
-            cv2.putText(new_frame, f"{class_detect} {int(conf*100)}%", (x1, y1 - 10),
+            if class_detect != "person":
+                cv2.rectangle(new_frame, (x1, y1), (x2, y2), color, 2)
+                cv2.putText(new_frame, f"{class_detect} {int(conf*100)}%", (x1, y1 - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
             # --- Lying heuristic ---
             if class_detect == 'person':
                 ratio = height / (width + 1e-6)
-                if ratio < 1.3:
+                if ratio < 1.15:
                     fall_suspected = True
                     cv2.rectangle(new_frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                     cv2.putText(new_frame, "fall?", (x1, y1 - 25),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+                else:
+                    fall_suspected = False
+                    cv2.rectangle(new_frame, (x1, y1), (x2, y2), color, 2)
+                    cv2.putText(new_frame, "standing", (x1, y1 - 25),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
     return fall_suspected, info, new_frame
 
 # ---------------- Check person on object ----------------
 def check_person_on_object(info, frame, iou_threshold=0.1, vertical_tolerance=0.35):
+    actually_fall = True
     def box_iou(a, b):
         xA = max(a["x1"], b["x1"])
         yA = max(a["y1"], b["y1"])
